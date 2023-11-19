@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="/media/tony/storpart/fpctrunklaztrunk/fpc/bin/x86_64-linux/fpc.sh" Date="1698970610"/>
+  <Params Value=" -MObjFPC -Scghi -Cg -O1 -gw3 -gl -l -vewnhibq -Fi/media/tony/storpart/GIT/lmakiproject1/lib/x86_64-linux -Fu/media/tony/storpart/GIT/lmakiproject1/mouseandkeyinput/lib/x86_64-linux/gtk2 -Fu/media/tony/storpart/fpctrunklaztrunk/lazarus/lcl/units/x86_64-linux/gtk2 -Fu/media/tony/storpart/fpctrunklaztrunk/lazarus/lcl/units/x86_64-linux -Fu/media/tony/storpart/fpctrunklaztrunk/lazarus/components/freetype/lib/x86_64-linux -Fu/media/tony/storpart/fpctrunklaztrunk/lazarus/components/lazutils/lib/x86_64-linux -Fu/media/tony/storpart/fpctrunklaztrunk/lazarus/packager/units/x86_64-linux -Fu/media/tony/storpart/GIT/lmakiproject1/ -FU/media/tony/storpart/GIT/lmakiproject1/lib/x86_64-linux/ -FE/media/tony/storpart/GIT/lmakiproject1/ -o/media/tony/storpart/GIT/lmakiproject1/project1 -dLCL -dLCLgtk2 project1.lpr"/>
+</CONFIG>
