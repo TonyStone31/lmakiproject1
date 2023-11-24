@@ -21,24 +21,31 @@ unit KeyInputIntf;
 interface
 
 uses
-  Classes, SysUtils, Forms;
+  Classes, SysUtils, Forms, LazUTF8;
 
 type
   { TKeyInput }
 
   TKeyInput = class
+  private
+
   protected
     procedure DoDown(Key: word); dynamic; abstract;
     procedure DoUp(Key: word); dynamic; abstract;
+    function CharToKeySym(ch: char): word;
+    function NeedsShift(ch: char): boolean;
+    procedure PressStringUCchar(CharValue: string);
   public
     procedure Down(Key: word);
     procedure Up(Key: word);
 
     procedure Press(Key: word);
-    procedure Press(StringValue: string);
+    procedure PressString(StringValue: string);
+    procedure PressStringUC(StringValue: string);
 
     procedure Apply(Shift: TShiftState);
     procedure Unapply(Shift: TShiftState);
+    procedure PressUnicodeChar(unicode: cardinal);
   end;
 
 implementation
@@ -66,68 +73,148 @@ begin
   Sleep(1);
 end;
 
-procedure TKeyInput.Press(StringValue: string);
-var
-  i: integer;
-  needShiftKey: boolean = False;
-  keySym: word;
-  ch: char;
+function TKeyInput.NeedsShift(ch: char): boolean;
 begin
-  i := 1;
-  while (i <= Length(StringValue)) do
-  begin
-    if StringValue[i] in ['A'..'Z', '~', '!', '@', '#', '$', '%', '^',
-      '&', '*', '(', ')', '_', '+', '{', '}', '|', ':', '"', '<', '>', '?'] then
-      needShiftKey := True;
+  Result := ch in ['A'..'Z', '~', '!', '@', '#', '$', '%', '^', '&',
+    '*', '(', ')', '_', '+', '{', '}', '|', ':', '"', '<', '>', '?'];
+end;
 
-    ch := UpCase(StringValue[i]);
-    case ch of
-      'A'..'Z': keySym := VK_A + (Ord(ch) - Ord('A'));
-      '0'..'9': keySym := VK_0 + (Ord(ch) - Ord('0'));
-
-      '!': keySym := VK_1;
-      '@': keySym := VK_2;
-      '#': keySym := VK_3;
-      '$': keySym := VK_4;
-      '%': keySym := VK_5;
-      '^': keySym := VK_6;
-      '&': keySym := VK_7;
-      '*': keySym := VK_8;
-      '(': keySym := VK_9;
-      ')': keySym := VK_0;
-
-      '~', '`': keySym := VK_LCL_TILDE;
-      '_', '-': keySym := VK_LCL_MINUS; //$2d;
-      '+', '=': keySym := VK_LCL_EQUAL; //$3d;
-      '{', '[': keySym := VK_LCL_OPEN_BRACKET; //$5b;
-      '}', ']': keySym := VK_LCL_CLOSE_BRACKET; //$5d;
-      '|', '\': keySym := VK_LCL_BACKSLASH; //$5c;
-      ':', ';': keySym := VK_LCL_SEMI_COMMA; //$3b;
-      '"', '''': keySym := VK_LCL_QUOTE; //$27;
-      '<', ',': keySym := VK_LCL_COMMA; //$2c;
-      '>', '.': keySym := VK_LCL_POINT; //$2e;
-      '?', '/': keySym := VK_LCL_SLASH; //$2f;
-
-      #32: keySym := VK_SPACE;
-      #9: keySym := VK_TAB;
-
-      //Cannot handle Windows this way.  Due to way windows needs a CR?
-      #10: keySym := VK_RETURN;
-      //#13: keySym := VK_RETURN;
-    end;
-
-    if needShiftKey then Apply([ssShift]);
-    Press(keySym);
-
-    //if (needShiftKey) or (keySym = VK_RETURN) then // Testing something on Windows
-    if (needShiftKey) then
-    begin
-      Unapply([ssShift]);
-      needShiftKey := False;
-    end;
-
-    Inc(i);
+function TKeyInput.CharToKeySym(ch: char): word;
+begin
+  ch := UpCase(ch);
+  case ch of
+    'A'..'Z': Result := VK_A + (Ord(ch) - Ord('A'));
+    '0'..'9': Result := VK_0 + (Ord(ch) - Ord('0'));
+    '!': Result := VK_1;
+    '@': Result := VK_2;
+    '#': Result := VK_3;
+    '$': Result := VK_4;
+    '%': Result := VK_5;
+    '^': Result := VK_6;
+    '&': Result := VK_7;
+    '*': Result := VK_8;
+    '(': Result := VK_9;
+    ')': Result := VK_0;
+    '~', '`': Result := VK_LCL_TILDE;
+    '_', '-': Result := VK_LCL_MINUS;
+    '+', '=': Result := VK_LCL_EQUAL;
+    '{', '[': Result := VK_LCL_OPEN_BRACKET;
+    '}', ']': Result := VK_LCL_CLOSE_BRACKET;
+    '|', '\': Result := VK_LCL_BACKSLASH;
+    ':', ';': Result := VK_LCL_SEMI_COMMA;
+    '"', '''': Result := VK_LCL_QUOTE;
+    '<', ',': Result := VK_LCL_COMMA;
+    '>', '.': Result := VK_LCL_POINT;
+    '?', '/': Result := VK_LCL_SLASH;
+    #32: Result := VK_SPACE;
+    #9: Result := VK_TAB;
+    {$IFDEF Windows}
+    #13: Result := VK_RETURN;
+      {$ELSE}
+    #10: Result := VK_RETURN;
+      {$ENDIF}
+    else
+      Result := VK_SPACE; // Default fallback
   end;
+end;
+
+procedure TKeyInput.PressUnicodeChar(unicode: cardinal);
+var
+  unicodestring: string;
+  j: integer;
+  keyCode: word;
+begin
+  unicodestring := IntToHex(unicode, 4); // Convert to hex string
+
+  {$IFDEF Linux}
+  // Linux implementation using Ctrl+Shift+U
+  Apply([ssCtrl, ssShift]);
+  Press(VK_U); // Press 'U' after Ctrl+Shift
+  Sleep(5);
+  for j := 1 to Length(unicodeString) do begin
+    if unicodeString[j] in ['0'..'9'] then
+      keyCode := VK_0 + Ord(unicodeString[j]) - Ord('0')
+    else if unicodeString[j] in ['A'..'F'] then
+      keyCode := VK_A + Ord(unicodeString[j]) - Ord('A');
+    Press(keyCode);
+  end;
+  Unapply([ssCtrl, ssShift]);
+    {$ENDIF}
+
+  {$IFDEF Windows}
+  // Windows implementation using Alt + Numpad
+  Apply([ssAlt]);
+  for j := 1 to Length(unicodeString) do begin
+    keyCode := Ord(unicodeString[j]);
+    Press(keyCode); // Simulate key press for each digit
+  end;
+  Unapply([ssAlt]);
+    {$ENDIF}
+
+  {$IFDEF Darwin}
+ // macOS
+  // I need a Mac to test this on.
+  Apply([ssAlt]);
+  for j := 1 to Length(unicodeString) do begin
+    if unicodeString[j] in ['0'..'9'] then
+      keyCode := VK_0 + Ord(unicodeString[j]) - Ord('0')
+    else if unicodeString[j] in ['A'..'F'] then
+      keyCode := VK_A + Ord(unicodeString[j]) - Ord('A');
+    Press(keyCode);
+  end;
+  Unapply([ssAlt]);
+    {$ENDIF}
+end;
+
+procedure TKeyInput.PressString(StringValue: string);
+var
+  p: PChar;
+  unicode: cardinal;
+  CPLen: integer;
+  keySym: word;
+begin
+  p := PChar(StringValue);
+  while p^ <> #0 do
+  begin
+    unicode := UTF8CodepointToUnicode(p, CPLen);
+
+    if (CPLen = 1) and (unicode < 128) then
+    begin
+      keySym := CharToKeySym(char(unicode));
+      if NeedsShift(char(unicode)) then Apply([ssShift]);
+      Press(keySym);
+      if NeedsShift(char(unicode)) then Unapply([ssShift]);
+    end
+    else if unicode > 0 then
+    begin
+      PressUnicodeChar(unicode);
+    end;
+
+    Inc(p, CPLen);
+  end;
+end;
+
+procedure TKeyInput.PressStringUC(StringValue: string);
+var
+  p: PChar;
+  unicode: cardinal;
+  CPLen: integer;
+begin
+  p := PChar(StringValue);
+  repeat
+    unicode := UTF8CodepointToUnicode(p, CPLen);
+    if unicode > 0 then PressUnicodeChar(unicode);
+    Inc(p, CPLen);
+  until (CPLen = 0) or (unicode = 0);
+end;
+
+procedure TKeyInput.PressStringUCchar(CharValue: string);
+var
+  unicode: cardinal;
+  CPLen: integer;
+begin
+  unicode := UTF8CodepointToUnicode(PChar(CharValue), CPLen);
+  if unicode > 0 then PressUnicodeChar(unicode);
 end;
 
 procedure TKeyInput.Apply(Shift: TShiftState);

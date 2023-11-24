@@ -70,15 +70,15 @@ begin
     VK_HOME: Result := XK_Home;
     VK_LEFT: Result := XK_Left;
     VK_UP: Result := XK_Up;
-   // VK_RIGHT: Result := XK_Right;    // causes duplicate case label error
+    VK_RIGHT: Result := XK_Right;    // causes duplicate case label error
     VK_DOWN: Result := XK_Down;
     VK_SELECT: Result := XK_Select;
     VK_PRINT: Result := XK_Print;
     VK_EXECUTE: Result := XK_Execute;
 
-   // VK_INSERT: Result := XK_Insert; // causes duplicate case label error
-   // VK_DELETE: Result := XK_Delete;  // causes duplicate case label error
-   // VK_HELP: Result := XK_Help;     // causes duplicate case label error
+    VK_INSERT: Result := XK_Insert; // causes duplicate case label error
+    VK_DELETE: Result := XK_Delete;  // causes duplicate case label error
+    VK_HELP: Result := XK_Help;     // causes duplicate case label error
     VK_0: Result := XK_0;
     VK_1: Result := XK_1;
     VK_2: Result := XK_2;
@@ -117,7 +117,7 @@ begin
     VK_Y: Result := XK_y;
     VK_Z: Result := XK_z;
 
-    //VK_NUMPAD0: Result := XK_KP_0;    // causes duplicate case label error
+    VK_NUMPAD0: Result := XK_KP_0;    // causes duplicate case label error
     VK_NUMPAD1: Result := XK_KP_1;
     VK_NUMPAD2: Result := XK_KP_2;
     VK_NUMPAD3: Result := XK_KP_3;

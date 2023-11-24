@@ -70,15 +70,15 @@ begin
     VK_HOME: Result := XK_Home;
     VK_LEFT: Result := XK_Left;
     VK_UP: Result := XK_Up;
-   // VK_RIGHT: Result := XK_Right;    //causes duplicate case label.... bug?
+    VK_RIGHT: Result := XK_Right;    // causes duplicate case label error
     VK_DOWN: Result := XK_Down;
     VK_SELECT: Result := XK_Select;
     VK_PRINT: Result := XK_Print;
     VK_EXECUTE: Result := XK_Execute;
 
-   // VK_INSERT: Result := XK_Insert; //causes duplicate case label.... bug?
-   // VK_DELETE: Result := XK_Delete;  //causes duplicate case label.... bug?
-   // VK_HELP: Result := XK_Help;     //causes duplicate case label.... bug?
+    VK_INSERT: Result := XK_Insert; // causes duplicate case label error
+    VK_DELETE: Result := XK_Delete;  // causes duplicate case label error
+    VK_HELP: Result := XK_Help;     // causes duplicate case label error
     VK_0: Result := XK_0;
     VK_1: Result := XK_1;
     VK_2: Result := XK_2;
@@ -117,7 +117,7 @@ begin
     VK_Y: Result := XK_y;
     VK_Z: Result := XK_z;
 
-    //VK_NUMPAD0: Result := XK_KP_0;    //causes duplicate case label.... bug?
+    //VK_NUMPAD0: Result := XK_KP_0;    // causes duplicate case label error
     VK_NUMPAD1: Result := XK_KP_1;
     VK_NUMPAD2: Result := XK_KP_2;
     VK_NUMPAD3: Result := XK_KP_3;
@@ -161,17 +161,17 @@ begin
     VK_SCROLL: Result := XK_Scroll_Lock;
 
 
-    VK_LCL_TILDE: Result := XK_grave;
-    VK_LCL_MINUS: Result := XK_minus;
-    VK_LCL_EQUAL: Result := XK_equal;
-    VK_LCL_OPEN_BRACKET: Result := XK_bracketleft;
-    VK_LCL_CLOSE_BRACKET: Result := XK_bracketright;
-    VK_LCL_BACKSLASH: Result := XK_backslash;
-    VK_LCL_SEMI_COMMA: Result := XK_semicolon;
-    VK_LCL_QUOTE: Result := XK_quoteright;
-    VK_LCL_COMMA: Result := XK_comma;
-    VK_LCL_POINT: Result := XK_period;
-    VK_LCL_SLASH: Result := XK_slash;
+    VK_LCL_TILDE: Result := XK_grave;                // Added by TS
+    VK_LCL_MINUS: Result := XK_minus;                // Added by TS
+    VK_LCL_EQUAL: Result := XK_equal;                // Added by TS
+    VK_LCL_OPEN_BRACKET: Result := XK_bracketleft;   // Added by TS
+    VK_LCL_CLOSE_BRACKET: Result := XK_bracketright; // Added by TS
+    VK_LCL_BACKSLASH: Result := XK_backslash;        // Added by TS
+    VK_LCL_SEMI_COMMA: Result := XK_semicolon;       // Added by TS
+    VK_LCL_QUOTE: Result := XK_quoteright;           // Added by TS
+    VK_LCL_COMMA: Result := XK_comma;                // Added by TS
+    VK_LCL_POINT: Result := XK_period;               // Added by TS
+    VK_LCL_SLASH: Result := XK_slash;                // Added by TS
 
   else
     Result := XK_VoidSymbol;

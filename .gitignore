@@ -1,4 +1,16 @@
 lib/
 backup/
 published/
+/lib/
+/backup/
+/published/
 *.zip
+mouseandkeyinput/lib/x86_64-linux/gtk2/keyinputintf.o
+*.o
+/mouseandkeyinput/lib/x86_64-linux/gtk2/
+*.o
+mouseandkeyinput/lib/x86_64-linux/gtk2/mouseandkeyinput.o
+mouseandkeyinput/lib/x86_64-linux/gtk2/mouseandkeyinput.ppu
+mouseandkeyinput/lib/x86_64-linux/gtk2/mouseinputintf.ppu
+mouseandkeyinput/lib/x86_64-linux/gtk2/xkeyinput.o
+mouseandkeyinput/lib/x86_64-linux/gtk2/xkeyinput.ppu
