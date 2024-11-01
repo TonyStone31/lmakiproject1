@@ -22,35 +22,99 @@ unit XKeyInput;
 interface
 
 uses
-  Classes, SysUtils, Controls, Forms,
-  X, XLib, KeySym,
+  Classes,
+  Controls,
+  Forms,
+  SysUtils,
+  KeySym,
+  X,
+  XLib,
   KeyInputIntf;
 
 type
-
   { TXKeyInput }
 
   TXKeyInput = class(TKeyInput)
+  private
+    FDisplay: PDisplay; // Field to hold the X display connection
+
   protected
-    procedure DoDown(Key: Word); override;
-    procedure DoUp(Key: Word); override;
+
+
+    procedure DoDown(Key: word); override;
+    procedure DoUp(Key: word); override;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+
+
   end;
 
 function InitializeKeyInput: TKeyInput;
 
-function XTestFakeKeyEvent(dpy: PDisplay; keycode: dword; is_press: Boolean32;
-  delay: dword): longint; cdecl; external;
+function XTestFakeKeyEvent(dpy: PDisplay; keycode: dword; is_press: Boolean32; delay: dword): longint; cdecl; external;
+procedure capsLockGetSaveState;
+procedure capsLockRestoreState;
+
+  var
+    capsLockBeginState: boolean;
+
+   mFDisplay: PDisplay; // Field to hold the X display connection
 
 implementation
 
-uses LCLType;
+uses
+  LCLType;
 
 function InitializeKeyInput: TKeyInput;
 begin
   Result := TXKeyInput.Create;
 end;
 
-function VirtualKeyToXKeySym(Key: Word): TKeySym;
+procedure capsLockGetSaveState;
+var
+  keyboardState: TXKeyboardState;
+begin
+  // Get the current state of the keyboard
+  MFDisplay := XOpenDisplay(nil);
+  XGetKeyboardControl(mFDisplay, @keyboardState);
+
+  // Check and remember if Caps Lock is on
+  capsLockBeginState := (keyboardState.led_mask and 1) <> 0;
+
+  // If Caps Lock is on, toggle it off
+  if capsLockBeginState then
+  begin
+    XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), True, 0);
+    XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), False, 0);
+    Sleep(200);
+  end;
+    if mFDisplay <> nil then
+    XCloseDisplay(mFDisplay); // Close the X display connection
+end;
+
+procedure capsLockRestoreState;
+var
+  keyboardState: TXKeyboardState;
+begin
+  mFDisplay := XOpenDisplay(nil);
+  // If Caps Lock was originally on and was toggled off, toggle it back on
+  if capsLockBeginState then
+  begin
+    XGetKeyboardControl(mFDisplay, @keyboardState);
+    if (keyboardState.led_mask and 1) = 0 then
+    begin
+      XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), True, 0);
+      XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), False, 0);
+      Sleep(200);
+    end;
+  end;
+    if mFDisplay <> nil then
+    XCloseDisplay(mFDisplay); // Close the X display connection
+end;
+
+function VirtualKeyToXKeySym(Key: word): TKeySym;
 begin
   case Key of
     VK_BACK: Result := XK_BackSpace;
@@ -70,15 +134,15 @@ begin
     VK_HOME: Result := XK_Home;
     VK_LEFT: Result := XK_Left;
     VK_UP: Result := XK_Up;
-    VK_RIGHT: Result := XK_Right;    // causes duplicate case label error
+    VK_RIGHT: Result := XK_Right;
     VK_DOWN: Result := XK_Down;
     VK_SELECT: Result := XK_Select;
     VK_PRINT: Result := XK_Print;
     VK_EXECUTE: Result := XK_Execute;
 
-    VK_INSERT: Result := XK_Insert; // causes duplicate case label error
-    VK_DELETE: Result := XK_Delete;  // causes duplicate case label error
-    VK_HELP: Result := XK_Help;     // causes duplicate case label error
+    VK_INSERT: Result := XK_Insert;
+    VK_DELETE: Result := XK_Delete;
+    VK_HELP: Result := XK_Help;
     VK_0: Result := XK_0;
     VK_1: Result := XK_1;
     VK_2: Result := XK_2;
@@ -117,7 +181,7 @@ begin
     VK_Y: Result := XK_y;
     VK_Z: Result := XK_z;
 
-    VK_NUMPAD0: Result := XK_KP_0;    // causes duplicate case label error
+    VK_NUMPAD0: Result := XK_KP_0;
     VK_NUMPAD1: Result := XK_KP_1;
     VK_NUMPAD2: Result := XK_KP_2;
     VK_NUMPAD3: Result := XK_KP_3;
@@ -173,41 +237,56 @@ begin
     VK_LCL_POINT: Result := XK_period;               // Added by TS
     VK_LCL_SLASH: Result := XK_slash;                // Added by TS
 
-  else
-    Result := XK_VoidSymbol;
+    else
+      Result := XK_VoidSymbol;
   end;
 
 end;
 
 { TXKeyInput }
 
-procedure TXKeyInput.DoDown(Key: Word);
+constructor TXKeyInput.Create;
+begin
+  inherited Create;
+  FDisplay := XOpenDisplay(nil); // Open the X display connection
+
+end;
+
+destructor TXKeyInput.Destroy;
+begin
+  if FDisplay <> nil then
+    XCloseDisplay(FDisplay); // Close the X display connection
+  inherited Destroy;
+end;
+
+procedure TXKeyInput.DoDown(Key: word);
 var
-  Display: PDisplay;
   KeySym: TKeySym;
 begin
   KeySym := VirtualKeyToXKeySym(Key);
-  if KeySym = XK_VoidSymbol then Exit;
+  if (KeySym = XK_VoidSymbol) or (FDisplay = nil) then Exit;
 
-  Display := XOpenDisplay(nil);
-  XTestFakeKeyEvent(Display, XKeysymToKeycode(Display, KeySym), True, 0);
-  XFlush(Display);
-  XCloseDisplay(Display);
+
+  // Simulate the key press
+  XTestFakeKeyEvent(FDisplay, XKeysymToKeycode(FDisplay, KeySym), True, 0);
+  XFlush(FDisplay);
 end;
 
-procedure TXKeyInput.DoUp(Key: Word);
+procedure TXKeyInput.DoUp(Key: word);
 var
-  Display: PDisplay;
   KeySym: TKeySym;
 begin
   KeySym := VirtualKeyToXKeySym(Key);
-  if KeySym = XK_VoidSymbol then Exit;
+  if (KeySym = XK_VoidSymbol) or (FDisplay = nil) then Exit;
 
-  Display := XOpenDisplay(nil);
-  XTestFakeKeyEvent(Display, XKeysymToKeycode(Display, KeySym), False, 0);
-  XFlush(Display);
-  XCloseDisplay(Display);
+  // Simulate the key release
+  XTestFakeKeyEvent(FDisplay, XKeysymToKeycode(FDisplay, KeySym), False, 0);
+
+
+
+  XFlush(FDisplay);
 end;
+
+
 
 end.
-
