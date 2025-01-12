@@ -30,6 +30,7 @@ uses
     CarbonMouseInput,
     CarbonKeyInput,
     {$ELSE}
+    WaylandMouseAndKeyInput,
     XMouseInput,
     XKeyInput,
     {$ENDIF}
@@ -42,20 +43,28 @@ var
 
 implementation
 
-
+function IsWayland: Boolean;
+begin
+  Result := GetEnvironmentVariable('WAYLAND_DISPLAY') <> '';
+end;
 
 initialization
 
-  // Create platform specific object for mouse input
-  MouseInput := InitializeMouseInput;
-
-  // Create platform specific object for key input
-  KeyInput := InitializeKeyInput;
+  if IsWayland then
+  begin
+    MouseInput := InitializeWaylandMouseInput;
+    KeyInput := InitializeWaylandKeyInput;
+  end
+  else
+  begin
+    MouseInput := InitializeMouseInput; // Default to X11
+    KeyInput := InitializeKeyInput;
+  end;
 
 finalization
 
   FreeAndNil(MouseInput);
   FreeAndNil(KeyInput);
 
-
 end.
+

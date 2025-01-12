@@ -8,7 +8,7 @@ unit LazMouseAndKeyInput;
 interface
 
 uses
-  MouseAndKeyInput;
+  MouseAndKeyInput, WaylandMouseAndKeyInput;
 
 implementation
 

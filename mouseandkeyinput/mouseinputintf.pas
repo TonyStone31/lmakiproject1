@@ -120,7 +120,7 @@ end;
 
 procedure TMouseInput.Move(Shift: TShiftState; ScreenX, ScreenY: Integer; Duration: Integer);
 const
-  Interval = 20; //ms
+  Interval = 20;
 var
   TimeStep: Integer;
   X, Y: Integer;

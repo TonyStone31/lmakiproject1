@@ -24,17 +24,22 @@ uses
   Classes, SysUtils, Controls, Forms,
   FPCMacOSAll, CarbonProc,
   KeyInputIntf;
-  
+
 type
 
   { TCarbonKeyInput }
 
   TCarbonKeyInput = class(TKeyInput)
+  private
+    capsLockBeginState: Boolean;
+    function IsCapsLockOn: Boolean;
   protected
     procedure DoDown(Key: Word); override;
     procedure DoUp(Key: Word); override;
+    procedure capsLockGetSaveState; override;
+    procedure capsLockRestoreState; override;
   end;
-  
+
 function InitializeKeyInput: TKeyInput;
 
 implementation
@@ -66,6 +71,14 @@ end;
 
 { TCarbonKeyInput }
 
+function TCarbonKeyInput.IsCapsLockOn: Boolean;
+var
+  ModifierState: CGEventFlags;
+begin
+  ModifierState := CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
+  Result := (ModifierState and kCGEventFlagMaskAlphaShift) <> 0;
+end;
+
 procedure TCarbonKeyInput.DoDown(Key: Word);
 begin
   SendKeyInput(Key, True);
@@ -76,5 +89,24 @@ begin
   SendKeyInput(Key, False);
 end;
 
-end.
+procedure TCarbonKeyInput.capsLockGetSaveState;
+begin
+  capsLockBeginState := IsCapsLockOn;
 
+  if capsLockBeginState then
+  begin
+    SendKeyInput(VK_CAPITAL, True);
+    SendKeyInput(VK_CAPITAL, False);
+  end;
+end;
+
+procedure TCarbonKeyInput.capsLockRestoreState;
+begin
+  if capsLockBeginState and not IsCapsLockOn then
+  begin
+    SendKeyInput(VK_CAPITAL, True);
+    SendKeyInput(VK_CAPITAL, False);
+  end;
+end;
+
+end.

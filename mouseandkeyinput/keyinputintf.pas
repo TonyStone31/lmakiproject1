@@ -35,11 +35,13 @@ type
     FCtrlKeyCode: word;
     FShiftKeyCode: word;
     FUKeyCode: word;
-    FHexKeyCodes: array[0..15] of word; // For 0-9, A-F
+    FHexKeyCodes: array[0..15] of word;
     procedure UnapplyAllKeys;
   protected
     procedure DoDown(Key: word); dynamic; abstract;
     procedure DoUp(Key: word); dynamic; abstract;
+    procedure capsLockGetSaveState; dynamic; abstract;
+    procedure capsLockRestoreState; dynamic; abstract;
     function CharToKeySym(ch: char): word;
     function NeedsShift(ch: char): boolean;
     procedure PressStringUCchar(CharValue: string);
@@ -55,9 +57,6 @@ type
     procedure Unapply(Shift: TShiftState);
     procedure PressUnicodeChar(unicode: cardinal);
 
-    property CtrlKeyCode: word read FCtrlKeyCode write FCtrlKeyCode;
-    property ShiftKeyCode: word read FShiftKeyCode write FShiftKeyCode;
-    property UKeyCode: word read FUKeyCode write FUKeyCode;
     procedure SetHexKeyCode(Index: integer; Value: word);
     function GetHexKeyCode(Index: integer): word;
     property HexKeyCodes[Index: integer]: word read GetHexKeyCode write SetHexKeyCode;
@@ -76,22 +75,17 @@ procedure TKeyInput.Down(Key: word);
 begin
   //while IsAnyKeyPressed do
   //  Sleep(100); // Wait for 10 ms and check again
-
-  sleep(10);
   DoDown(Key);
   // Optional:
   Application.ProcessMessages;
-  Sleep(4);
+  sleep(4);
 end;
 
 procedure TKeyInput.Up(Key: word);
 begin
-  //while IsAnyKeyPressed do
-  //  Sleep(100); // Wait for 10 ms and check again
-
   DoUp(Key);
   Application.ProcessMessages;
-  Sleep(4);
+  sleep(4);
 end;
 
 procedure TKeyInput.Press(Key: word);
@@ -116,8 +110,7 @@ end;
 
 function TKeyInput.NeedsShift(ch: char): boolean;
 begin
-  Result := ch in ['A'..'Z', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
-    '{', '}', '|', ':', '"', '<', '>', '?'];
+  Result := ch in ['A'..'Z', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '{', '}', '|', ':', '"', '<', '>', '?'];
 end;
 
 function TKeyInput.CharToKeySym(ch: char): word;
@@ -166,7 +159,7 @@ var
   keyCode: word;
 begin
   unicodestring := IntToHex(unicode, 4); // Convert to hex string
-
+  capsLockGetSaveState;  // Better way to handle a Caps Lock key on may be to toogle Shift Key requirement.
   {$IFDEF Linux}
   // Linux implementation using Ctrl+Shift+U
   Apply([ssCtrl, ssShift]);
@@ -194,7 +187,7 @@ begin
 
   {$IFDEF Darwin}
  // macOS
-  // I need a Mac to test this on.
+  // Need a Mac to test this on.
   Apply([ssAlt]);
   for j := 1 to Length(unicodeString) do begin
     if unicodeString[j] in ['0'..'9'] then
@@ -205,9 +198,8 @@ begin
   end;
   Unapply([ssAlt]);
   {$ENDIF}
+  capsLockRestoreState;
 end;
-
-
 
 procedure TKeyInput.PressString(StringValue: string);
 var
@@ -216,12 +208,7 @@ var
   CPLen: integer;
   keySym: word;
 begin
-  capsLockGetSaveState;
-  //
-  //// Unapply all control keys
-  //Unapply([ssShift, ssCtrl, ssAlt]);
-  //
-
+  capsLockGetSaveState;  // Better way to handle a Caps Lock key on may be to toogle Shift Key requirement.
   UnapplyAllKeys;
 
   p := PChar(StringValue);
@@ -249,39 +236,25 @@ begin
     Inc(p, CPLen);
   end;
   capsLockRestoreState;
-
-
 end;
 
 procedure TKeyInput.UnapplyAllKeys;
 var
   keyCode: word;
 begin
-  // Unapply modifier keys
   Up(VK_SHIFT);
   Up(VK_CONTROL);
   Up(VK_MENU); // Alt key
-  //Up(VK_CAPITAL); // Caps Lock
-  //Up(VK_NUMLOCK);
-  //Up(VK_SCROLL);
-
 
   for keyCode := VK_0 to VK_9 do
     Up(keyCode);
 
-
   for keyCode := VK_A to VK_Z do
     Up(keyCode);
 
-
   for keyCode := VK_F1 to VK_F12 do
     Up(keyCode);
-
-
-  Application.ProcessMessages;
 end;
-
-
 
 procedure TKeyInput.PressStringUC(StringValue: string);
 var
@@ -319,8 +292,6 @@ begin
   if ssCtrl in Shift then Up(VK_CONTROL);
   if ssAlt in Shift then Up(VK_MENU);
 end;
-
-
 
 
 end.

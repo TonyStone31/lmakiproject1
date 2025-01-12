@@ -1,13 +1,15 @@
 object Form1: TForm1
-  Left = 823
+  Left = 622
   Height = 943
-  Top = 2389
+  Top = 2987
   Width = 1200
   Caption = 'Form1'
   ClientHeight = 943
   ClientWidth = 1200
   DesignTimePPI = 115
   LCLVersion = '4.99.0.0'
+  OnCreate = FormCreate
+  OnResize = FormResize
   object memTestDestination: TMemo
     AnchorSideLeft.Control = btnStartTest
     AnchorSideLeft.Side = asrBottom
@@ -18,7 +20,7 @@ object Form1: TForm1
     AnchorSideBottom.Side = asrBottom
     Left = 631
     Height = 421
-    Top = 216
+    Top = 160
     Width = 569
     Anchors = [akTop, akLeft, akRight]
     ScrollBars = ssAutoBoth
@@ -31,7 +33,7 @@ object Form1: TForm1
     AnchorSideBottom.Side = asrBottom
     Left = 570
     Height = 421
-    Top = 216
+    Top = 160
     Width = 61
     Caption = '>>>'
     TabOrder = 1
@@ -44,46 +46,43 @@ object Form1: TForm1
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 421
-    Top = 224
+    Top = 160
     Width = 570
     Anchors = [akTop, akLeft, akRight]
     Lines.Strings = (
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      'abcdefghijklmnopqrstuvwxyz'
+      'ASCII Characters:'
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ     abcdefghijklmnopqrstuvwxyz'
       '1234567890'
       '!@#$%^&*()~_+`-={}|[]\:";''<>?,./'
       ''
-      '© ® ™ ℠ € £ ¥ ¢ $ ₩ ₪ ₺ ₹ ₽'
-      '½ ¼ ¾ ⅓ ⅔ ⅛ ⅜ ⅝ ⅞'
-      '± × ÷ ≠ ≤ ≥ ≈ ≅ ∝ ∞ ∫ ∑ √'
+      'Currency:'
+      '€ £ ¥ ¢ $ ₹ ₽'
       ''
-      'α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ τ υ φ χ ψ ω'
-      'Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ Τ Υ Φ Χ Ψ Ω'
-      '✓ ✔ ✕ ✖ ✗ ✘'
-      '← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙'
-      '❶ ❷ ❸ ❹ ❺ ❻ ❼ ❽ ❾ ❿'
-      '☯ ☮ ☭ ✡ ☪ ☫ ☬ ☸ ✝ ✞ ✟'
-      '♈ ♉ ♊ ♋ ♌ ♍ ♎ '
-      '⚑ ⚐ ⚒ ⚓ ⚔ ⚖ ⚗ ⚙ ⚛ ⚜'
-      '⛐ ⛑ ⛒ ⛓ ⛔ ⛕ ⛖ ⛗ ⛘ ⛙ ⛚ ⛛'
-      '⤠ ⤡ ⤢ ⤣ ⤤ ⤥'
-      '⤰ ⤱ ⤲ ⤳ ⤴ ⤵ ⤶ ⤷ ⤸ ⤹ ⤺ ⤻'
-      'な に ぬ ね の は ひ ふ へ ほ ま み む'
-      '何 作 使 例 供 依 価 保 '
+      'Fractions:'
+      '½ ¼ ¾ ⅓ ⅔'
+      ''
+      'Operators:'
+      '± × ÷ ≠ ≤ ≥ ∞ √ ∑'
+      ''
+      'Arrows:'
+      '← ↑ → ↓ ↔'
+      ''
+      'Emojis:'
+      '😀 😁 😂 🤔 🙃 😉  🌟'
+      '❤️ 💔 🔥 🌈 💡 📚  🎉'
     )
     ScrollBars = ssAutoBoth
     TabOrder = 2
-    OnChange = memTestSourceChange
   end
   object btnReType: TButton
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = memTextToSim
     AnchorSideTop.Side = asrBottom
     Left = 0
-    Height = 68
+    Height = 52
     Top = 96
     Width = 275
-    Caption = 'Retype in 3 seconds'
+    Caption = 'Retype in 5 seconds'
     TabOrder = 3
     OnClick = btnReTypeClick
   end
@@ -94,7 +93,7 @@ object Form1: TForm1
     Width = 1200
     Align = alTop
     Lines.Strings = (
-      'Whatever text you type here will be simulated as keyboard input.  After pressing the re-type button it will wait 3 seconds for you to set the cursor in a text field some where.'
+      'Whatever text you type here will be simulated as keyboard input after pressing the Retype button.  It will wait 5 seconds for you to set the cursor in a text field some where.'
     )
     ScrollBars = ssAutoBoth
     TabOrder = 4
@@ -104,11 +103,11 @@ object Form1: TForm1
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 918
-    Height = 68
+    Height = 52
     Top = 96
     Width = 282
     Anchors = [akTop, akRight]
-    Caption = 'btnMoveMouseClick'
+    Caption = 'Move Mouse Then Click Demo'
     TabOrder = 5
     OnClick = btnMoveMouseClickClick
   end
@@ -122,13 +121,38 @@ object Form1: TForm1
     Caption = 'lblKeyCode'
   end
   object Button1: TButton
-    Left = 492
-    Height = 72
-    Top = 739
-    Width = 148
-    Caption = 'Button1'
+    Left = 640
+    Height = 32
+    Top = 592
+    Width = 537
+    Caption = 'Simulate Typing Unicode Characters (14000-14020)'
     TabOrder = 6
     OnClick = Button1Click
+  end
+  object btnAltTab: TButton
+    Left = 288
+    Height = 52
+    Top = 96
+    Width = 225
+    Caption = 'Alt + Tab'
+    TabOrder = 7
+    OnClick = btnAltTabClick
+  end
+  object PaintBox1: TPaintBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 287
+    Top = 656
+    Width = 1200
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    OnMouseDown = PaintBox1MouseDown
+    OnMouseMove = PaintBox1MouseMove
+    OnMouseUp = PaintBox1MouseUp
+    OnPaint = PaintBox1Paint
   end
   object Timer1: TTimer
     Interval = 100

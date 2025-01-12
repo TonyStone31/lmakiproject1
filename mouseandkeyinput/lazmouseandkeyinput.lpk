@@ -23,7 +23,7 @@
     <License Value="GPL
 "/>
     <Version Minor="1"/>
-    <Files Count="9">
+    <Files Count="10">
       <Item1>
         <Filename Value="carbonkeyinput.pas"/>
         <AddToUsesPkgSection Value="False"/>
@@ -68,6 +68,10 @@
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="XMouseInput"/>
       </Item9>
+      <Item10>
+        <Filename Value="waylandmouseandkeyinput.pas"/>
+        <UnitName Value="waylandmouseandkeyinput"/>
+      </Item10>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="2">

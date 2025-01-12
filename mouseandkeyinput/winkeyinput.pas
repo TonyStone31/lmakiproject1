@@ -30,9 +30,14 @@ type
   { TWinKeyInput }
 
   TWinKeyInput = class(TKeyInput)
+  private
+    capsLockBeginState: Boolean;
+    function GetKeyStateVK(Key: Byte): Boolean;
   protected
     procedure DoDown(Key: Word); override;
     procedure DoUp(Key: Word); override;
+    procedure capsLockGetSaveState; override;
+    procedure capsLockRestoreState; override;
   end;
   
 function InitializeKeyInput: TKeyInput;
@@ -67,6 +72,26 @@ end;
 procedure TWinKeyInput.DoUp(Key: Word);
 begin
   SendKeyInput(KEYEVENTF_KEYUP, Key);
+end;
+
+procedure TWinKeyInput.capsLockGetSaveState;
+begin
+  capsLockBeginState := GetKeyStateVK(VK_CAPITAL);
+
+  if capsLockBeginState then
+  begin
+    SendKeyInput(0, VK_CAPITAL);
+    SendKeyInput(KEYEVENTF_KEYUP, VK_CAPITAL);
+  end;
+end;
+
+procedure TWinKeyInput.capsLockRestoreState;
+begin
+  if capsLockBeginState and not GetKeyStateVK(VK_CAPITAL) then
+  begin
+    SendKeyInput(0, VK_CAPITAL);
+    SendKeyInput(KEYEVENTF_KEYUP, VK_CAPITAL);
+  end;
 end;
 
 end.

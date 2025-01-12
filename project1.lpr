@@ -9,7 +9,7 @@ uses
   {$IFDEF HASAMIGA}
   athreads,
   {$ENDIF}
-  Interfaces, // this includes the LCL widgetset
+  Interfaces,
   Forms, Unit1, lazmouseandkeyinput;
 
 {$R *.res}

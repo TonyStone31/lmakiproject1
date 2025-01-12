@@ -76,7 +76,6 @@ begin
   Input.mi.dx := MulDiv(X, 65535, Screen.Width - 1); // screen horizontal coordinates: 0 - 65535
   Input.mi.dy := MulDiv(Y, 65535, Screen.Height - 1); // screen vertical coordinates: 0 - 65535
   Input.mi.dwFlags := Flag or MOUSEEVENTF_ABSOLUTE;
-
   SendInput(1, @Input, SizeOf(Input));
 end;
 

@@ -25,42 +25,31 @@ uses
   Classes,
   Controls,
   Forms,
+  KeyInputIntf, KeySym,
   SysUtils,
-  KeySym,
   X,
-  XLib,
-  KeyInputIntf;
+  XLib;
 
 type
   { TXKeyInput }
 
   TXKeyInput = class(TKeyInput)
   private
-    FDisplay: PDisplay; // Field to hold the X display connection
-
+    xDisplayConnection: PDisplay;
+    capsLockBeginState: boolean;
+    function VirtualKeyToXKeySym(Key: word): TKeySym;
   protected
-
-
     procedure DoDown(Key: word); override;
     procedure DoUp(Key: word); override;
+    procedure capsLockGetSaveState; override;
+    procedure capsLockRestoreState; override;
   public
     constructor Create;
     destructor Destroy; override;
-
-
-
   end;
 
 function InitializeKeyInput: TKeyInput;
-
 function XTestFakeKeyEvent(dpy: PDisplay; keycode: dword; is_press: Boolean32; delay: dword): longint; cdecl; external;
-procedure capsLockGetSaveState;
-procedure capsLockRestoreState;
-
-  var
-    capsLockBeginState: boolean;
-
-   mFDisplay: PDisplay; // Field to hold the X display connection
 
 implementation
 
@@ -72,49 +61,38 @@ begin
   Result := TXKeyInput.Create;
 end;
 
-procedure capsLockGetSaveState;
+procedure TXKeyInput.capsLockGetSaveState;
 var
   keyboardState: TXKeyboardState;
 begin
-  // Get the current state of the keyboard
-  MFDisplay := XOpenDisplay(nil);
-  XGetKeyboardControl(mFDisplay, @keyboardState);
-
-  // Check and remember if Caps Lock is on
+  XGetKeyboardControl(xDisplayConnection, @keyboardState);
   capsLockBeginState := (keyboardState.led_mask and 1) <> 0;
 
-  // If Caps Lock is on, toggle it off
   if capsLockBeginState then
   begin
-    XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), True, 0);
-    XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), False, 0);
+    XTestFakeKeyEvent(xDisplayConnection, XKeysymToKeycode(xDisplayConnection, XK_Caps_Lock), True, 0);
+    XTestFakeKeyEvent(xDisplayConnection, XKeysymToKeycode(xDisplayConnection, XK_Caps_Lock), False, 0);
     Sleep(200);
   end;
-    if mFDisplay <> nil then
-    XCloseDisplay(mFDisplay); // Close the X display connection
 end;
 
-procedure capsLockRestoreState;
+procedure TXKeyInput.capsLockRestoreState;
 var
   keyboardState: TXKeyboardState;
 begin
-  mFDisplay := XOpenDisplay(nil);
-  // If Caps Lock was originally on and was toggled off, toggle it back on
   if capsLockBeginState then
   begin
-    XGetKeyboardControl(mFDisplay, @keyboardState);
+    XGetKeyboardControl(xDisplayConnection, @keyboardState);
     if (keyboardState.led_mask and 1) = 0 then
     begin
-      XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), True, 0);
-      XTestFakeKeyEvent(mFDisplay, XKeysymToKeycode(mFDisplay, XK_Caps_Lock), False, 0);
+      XTestFakeKeyEvent(xDisplayConnection, XKeysymToKeycode(xDisplayConnection, XK_Caps_Lock), True, 0);
+      XTestFakeKeyEvent(xDisplayConnection, XKeysymToKeycode(xDisplayConnection, XK_Caps_Lock), False, 0);
       Sleep(200);
     end;
   end;
-    if mFDisplay <> nil then
-    XCloseDisplay(mFDisplay); // Close the X display connection
 end;
 
-function VirtualKeyToXKeySym(Key: word): TKeySym;
+function TXKeyInput.VirtualKeyToXKeySym(Key: word): TKeySym;
 begin
   case Key of
     VK_BACK: Result := XK_BackSpace;
@@ -122,8 +100,9 @@ begin
     VK_CLEAR: Result := XK_Clear;
     VK_RETURN: Result := XK_Return;
     VK_SHIFT: Result := XK_Shift_L;
-    VK_CONTROL: Result := XK_Control_L;
-    VK_MENU: Result := XK_VoidSymbol; // alt key crashes app, XK_Alt_R;
+    VK_CONTROL: Result := XK_Control_R;
+    VK_MENU: Result := XK_Alt_R;
+    //VK_RMENU: Result := XK_Alt_L;
     VK_CAPITAL: Result := XK_Caps_Lock;
 
     VK_ESCAPE: Result := XK_Escape;
@@ -224,18 +203,17 @@ begin
     VK_NUMLOCK: Result := XK_Num_Lock;
     VK_SCROLL: Result := XK_Scroll_Lock;
 
-
-    VK_LCL_TILDE: Result := XK_grave;                // Added by TS
-    VK_LCL_MINUS: Result := XK_minus;                // Added by TS
-    VK_LCL_EQUAL: Result := XK_equal;                // Added by TS
-    VK_LCL_OPEN_BRACKET: Result := XK_bracketleft;   // Added by TS
-    VK_LCL_CLOSE_BRACKET: Result := XK_bracketright; // Added by TS
-    VK_LCL_BACKSLASH: Result := XK_backslash;        // Added by TS
-    VK_LCL_SEMI_COMMA: Result := XK_semicolon;       // Added by TS
-    VK_LCL_QUOTE: Result := XK_quoteright;           // Added by TS
-    VK_LCL_COMMA: Result := XK_comma;                // Added by TS
-    VK_LCL_POINT: Result := XK_period;               // Added by TS
-    VK_LCL_SLASH: Result := XK_slash;                // Added by TS
+    VK_LCL_TILDE: Result := XK_grave;
+    VK_LCL_MINUS: Result := XK_minus;
+    VK_LCL_EQUAL: Result := XK_equal;
+    VK_LCL_OPEN_BRACKET: Result := XK_bracketleft;
+    VK_LCL_CLOSE_BRACKET: Result := XK_bracketright;
+    VK_LCL_BACKSLASH: Result := XK_backslash;
+    VK_LCL_SEMI_COMMA: Result := XK_semicolon;
+    VK_LCL_QUOTE: Result := XK_quoteright;
+    VK_LCL_COMMA: Result := XK_comma;
+    VK_LCL_POINT: Result := XK_period;
+    VK_LCL_SLASH: Result := XK_slash;
 
     else
       Result := XK_VoidSymbol;
@@ -248,14 +226,13 @@ end;
 constructor TXKeyInput.Create;
 begin
   inherited Create;
-  FDisplay := XOpenDisplay(nil); // Open the X display connection
-
+  xDisplayConnection := XOpenDisplay(nil);
 end;
 
 destructor TXKeyInput.Destroy;
 begin
-  if FDisplay <> nil then
-    XCloseDisplay(FDisplay); // Close the X display connection
+  if xDisplayConnection <> nil then
+    XCloseDisplay(xDisplayConnection);
   inherited Destroy;
 end;
 
@@ -264,12 +241,9 @@ var
   KeySym: TKeySym;
 begin
   KeySym := VirtualKeyToXKeySym(Key);
-  if (KeySym = XK_VoidSymbol) or (FDisplay = nil) then Exit;
-
-
-  // Simulate the key press
-  XTestFakeKeyEvent(FDisplay, XKeysymToKeycode(FDisplay, KeySym), True, 0);
-  XFlush(FDisplay);
+  if (KeySym = XK_VoidSymbol) or (xDisplayConnection = nil) then Exit;
+  XTestFakeKeyEvent(xDisplayConnection, XKeysymToKeycode(xDisplayConnection, KeySym), True, 0);
+  XFlush(xDisplayConnection);
 end;
 
 procedure TXKeyInput.DoUp(Key: word);
@@ -277,16 +251,11 @@ var
   KeySym: TKeySym;
 begin
   KeySym := VirtualKeyToXKeySym(Key);
-  if (KeySym = XK_VoidSymbol) or (FDisplay = nil) then Exit;
-
-  // Simulate the key release
-  XTestFakeKeyEvent(FDisplay, XKeysymToKeycode(FDisplay, KeySym), False, 0);
-
-
-
-  XFlush(FDisplay);
+  if (KeySym = XK_VoidSymbol) or (xDisplayConnection = nil) then Exit;
+  // key release
+  XTestFakeKeyEvent(xDisplayConnection, XKeysymToKeycode(xDisplayConnection, KeySym), False, 0);
+  XFlush(xDisplayConnection);
 end;
-
 
 
 end.
